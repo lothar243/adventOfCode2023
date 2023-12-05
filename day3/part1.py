@@ -52,21 +52,26 @@ if __name__ == "__main__":
     # (slightly oversized so that I can cheat with adjacencies)
     height = len(lines)
     width = len(lines[0])
-    bitmap = [[False] * (width + 1)] * (height+1)
+    bitmap = [[False] * (width + 1) for _ in range(height+1)]
     # find all the symbols and mark adjacent bit True
     ignoredCharacters = "0123456789."
-    for x in range(width):
-        for y in range(height):
-            if lines[y][x] not in ignoredCharacters:
+    for y in range(height):
+        for x in range(width):
+            currentChar = lines[y][x]
+            if currentChar not in ignoredCharacters:
                 # print(x, y, lines[y][x])
-                for deltaX in (-1, 0, 1):
-                    for deltaY in (-1, 0, 1):
+                for deltaY in (-1, 0, 1):
+                    for deltaX in (-1, 0, 1):
                         bitmap[y + deltaY][x + deltaX] = True
     # pprint(bitmap)
     # for line in lines:
     #     pprint(extractNumbers(line, width))
     sum = 0
-    for i in range(height):
-        
 
-    # then parase any number that has a digit marked True
+    # then find any number that has a digit marked True
+    for i in range(height):
+        lineNumbers = extractNumbers(lines[i], width)
+        for numberDict in lineNumbers:
+            if any(bitmap[i][numberDict['start'] : numberDict['stop'] + 1]):
+                sum += numberDict['value']
+    print(sum)
