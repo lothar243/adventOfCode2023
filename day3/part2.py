@@ -39,6 +39,25 @@ def extractNumbers(lineString: str, width):
         number['value'] = int(number['value'])
     return numbers
         
+def gearRatio(lineNumbers, x, y):
+    "Returns the gear ratio for an asterisk located at x,y (or 0 if it's not a gear)"
+    yRange = range(max(0, y - 1), min(len(lineNumbers), y + 1) + 1)
+    numAdjacentNumbers = 0
+    productOfNumbers = 1
+    for newY in yRange:
+        for lineNumber in lineNumbers[newY]:
+            if is_adjacent_to_x(lineNumber, x):
+                numAdjacentNumbers += 1
+                productOfNumbers *= lineNumber['value']
+    if numAdjacentNumbers == 2:
+        return productOfNumbers
+    else:
+        return 0
+
+def is_adjacent_to_x(lineNumber, x):
+    "Returns True if x is adjacent to linenumber."
+    # achieve this by x being between 'start - 1' and 'stop + 1'
+    return lineNumber['start'] - 1 <= x <= lineNumber['stop'] + 1
 
 if __name__ == "__main__":
     
@@ -47,31 +66,18 @@ if __name__ == "__main__":
     else:
         with open(sys.argv[1]) as inputfile:
             lines = [line.strip() for line in inputfile.readlines()]
-    
-    # create a bitmap the same size as the input with True in spots that are adjacent to symbols
-    # (slightly oversized so that I can cheat with adjacencies)
     height = len(lines)
     width = len(lines[0])
-    bitmap = [[False] * (width + 1) for _ in range(height+1)]
-    # find all the symbols and mark adjacent bit True
-    ignoredCharacters = "0123456789."
+    # get all the numbers
+    lineNumbers = [] # This will be a list of lists, first indexed by line number, then which number
+    for i in range(height):
+        lineNumbers.append(extractNumbers(lines[i], width))
+
+    # find each asterisk and add its gear ratio
+    sum = 0
     for y in range(height):
         for x in range(width):
-            currentChar = lines[y][x]
-            if currentChar not in ignoredCharacters:
-                # print(x, y, lines[y][x])
-                for deltaY in (-1, 0, 1):
-                    for deltaX in (-1, 0, 1):
-                        bitmap[y + deltaY][x + deltaX] = True
-    # pprint(bitmap)
-    # for line in lines:
-    #     pprint(extractNumbers(line, width))
-    sum = 0
+            if lines[y][x] == "*":
+                sum += gearRatio(lineNumbers, x, y)
 
-    # then find any number that has a digit marked True
-    for i in range(height):
-        lineNumbers = extractNumbers(lines[i], width)
-        for numberDict in lineNumbers:
-            if any(bitmap[i][numberDict['start'] : numberDict['stop'] + 1]):
-                sum += numberDict['value']
     print(sum)
