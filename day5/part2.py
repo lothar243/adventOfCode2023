@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 sample_input = """seeds: 79 14 55 13
 
 seed-to-soil map:
@@ -68,6 +69,8 @@ def seeds(seedRanges):
         for j in range(seedRanges[i + 1]):
             yield seedRanges[0] + j
 
+def calc_num_seeds(seedRanges):
+    return sum(seedRanges[1::2])
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -89,6 +92,9 @@ if __name__ == "__main__":
     humidity_to_location, currentline = readmap("humidity-to-location map:", lines, currentline + 1)
     
     minLocation = 999999999999999999999
+    numSeeds = calc_num_seeds(seedRanges)
+    startTime = datetime.now()
+    print(f"Total number of seeds: {numSeeds}, starting at {startTime}")
     seedNum = 1
     for seed in seeds(seedRanges):
         soil = convert_with_map(seed_to_soil, seed)
@@ -101,6 +107,11 @@ if __name__ == "__main__":
         # minLocation = min(location, minLocation)
         if location < minLocation:
             minLocation = location
-            print(f"new min location: {minLocation}, {seedNum=}")
+            completion = seedNum / numSeeds
+            elapsedTime = datetime.now() - startTime
+            predictedTime = elapsedTime / completion
+            expectedCompletion = datetime.now() + predictedTime
+            print(f"new min location: {minLocation:>16}, {seed=:>16}, Completion={completion * 100:>6.2f}%, expected to be done: {expectedCompletion}")
+        seedNum += 1
 
     print(minLocation)

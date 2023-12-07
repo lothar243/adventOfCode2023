@@ -68,6 +68,7 @@ def seeds(seedRanges):
         for j in range(seedRanges[i + 1]):
             yield seedRanges[0] + j
 
+
 def is_a_seed(seedRange, seedNum):
     for i in range(0, len(seedRanges), 2):
         if seedRange[i] <= seedNum < seedRange[i] + seedRange[i + 1]:
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     humidity_to_location, currentline = readmap("humidity-to-location map:", lines, currentline + 1)
     
     seedNum = 1
-    for location in range(1, 999999999):
+    for location in range(1, 440000000):
         humidity = convert_with_map_reverse(humidity_to_location, location)
         temperature = convert_with_map_reverse(temperature_to_humidity, humidity)
         light = convert_with_map_reverse(light_to_temperature, temperature)
