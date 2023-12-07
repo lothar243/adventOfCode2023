@@ -33,11 +33,11 @@ humidity-to-location map:
 60 56 37
 56 93 4"""
 
-def convert_with_map(list_of_ranges: list, inputVal: int):
+def convert_with_map_reverse(list_of_ranges: list, inputVal: int):
     for mapping_range in list_of_ranges:
-        startVal = mapping_range['start']
+        startVal = mapping_range['destination']
         if  startVal <= inputVal <= startVal + mapping_range['rangeLength']:
-            return inputVal - startVal + mapping_range['destination']
+            return inputVal - startVal + mapping_range['start']
     return inputVal
 
 def lineString_to_range(lineString):
@@ -68,6 +68,11 @@ def seeds(seedRanges):
         for j in range(seedRanges[i + 1]):
             yield seedRanges[0] + j
 
+def is_a_seed(seedRange, seedNum):
+    for i in range(0, len(seedRanges), 2):
+        if seedRange[i] <= seedNum < seedRange[i] + seedRange[i + 1]:
+            return True
+    return False
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -81,26 +86,24 @@ if __name__ == "__main__":
     # Read seed-to-soil map
     currentLine = 2
     seed_to_soil, currentline = readmap("seed-to-soil map:", lines, currentLine)
-    soil_to_fertilizer, currentline = readmap("soil-to-fertilzer map:", lines, currentline + 1)
+    soil_to_fertilizer, currentline = readmap("soil-to-fertilizer map:", lines, currentline + 1)
     fertilizer_to_water, currentline = readmap("fertilizer-to-water map:", lines, currentline + 1)
     water_to_light, currentline = readmap("water-to-light map:", lines, currentline + 1)
     light_to_temperature, currentline = readmap("light-to-temperature map:", lines, currentline + 1)
     temperature_to_humidity, currentline = readmap("temperature-to-humidity map:", lines, currentline + 1)
     humidity_to_location, currentline = readmap("humidity-to-location map:", lines, currentline + 1)
     
-    minLocation = 999999999999999999999
     seedNum = 1
-    for seed in seeds(seedRanges):
-        soil = convert_with_map(seed_to_soil, seed)
-        fertilizer = convert_with_map(soil_to_fertilizer, soil)
-        water = convert_with_map(fertilizer_to_water, fertilizer)
-        light = convert_with_map(water_to_light, water)
-        temperature = convert_with_map(light_to_temperature, light)
-        humidity = convert_with_map(temperature_to_humidity, temperature)
-        location = convert_with_map(humidity_to_location, humidity)
-        # minLocation = min(location, minLocation)
-        if location < minLocation:
-            minLocation = location
-            print(f"new min location: {minLocation}, {seedNum=}")
-
-    print(minLocation)
+    for location in range(1, 999999999):
+        humidity = convert_with_map_reverse(humidity_to_location, location)
+        temperature = convert_with_map_reverse(temperature_to_humidity, humidity)
+        light = convert_with_map_reverse(light_to_temperature, temperature)
+        water = convert_with_map_reverse(water_to_light, light)
+        fertilizer = convert_with_map_reverse(fertilizer_to_water, water)
+        soil = convert_with_map_reverse(soil_to_fertilizer, fertilizer)
+        seed = convert_with_map_reverse(seed_to_soil, soil)
+        if is_a_seed(seedRanges, seed):
+            print(location)
+            break
+        if location % 1000000 == 0:
+            print(location)
