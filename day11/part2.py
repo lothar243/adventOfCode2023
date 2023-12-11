@@ -17,7 +17,8 @@ def expand_galaxy(lines: list):
     # starting with columns
     width = len(lines[0])
     height = len(lines)
-
+    expandedColumns = []
+    expandedRows = []
     expandedHorizontal = [[] for _ in range(height)]
     for x in range(width):
         column = [line[x] for line in lines]
@@ -34,8 +35,10 @@ def expand_galaxy(lines: list):
             outputLines.append(joinedLine)
     return outputLines
     
-def manhattan_distance(location1, location2):
-    return abs(location1[0] - location2[0]) + abs(location1[1] - location2[1])
+def manhattan_distance(location1, location2, expandedRows, expandedColumns, expansionMultiple):
+    baseDistance = abs(location1[0] - location2[0]) + abs(location1[1] - location2[1])
+    horizontalRange = range(min(location1[0], location2[0]))
+    numHorizontalExpansions = len([])
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
