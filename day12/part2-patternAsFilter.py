@@ -1,5 +1,5 @@
 import sys
-from itertools import permutations
+from itertools import combinations
 
 sample_input2 = """#.#.### 1,1,3
 .#...#....###. 1,1,3
@@ -14,6 +14,16 @@ sample_input = """???.### 1,1,3
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
+
+def unfold_springs(pattern: list):
+    output = pattern[:]
+    for _ in range(4):
+        output.append("?")
+        output.extend(pattern)
+    return output
+
+def unfold_broken_nums(brokenNums: list):
+    return brokenNums * 5
 
 def read_groups(pattern: list):
     inBroken = False  # True when index is going through broken springs
@@ -80,21 +90,33 @@ def clean_up(pattern: list, brokenNums: list):
                     if pattern[i] == '#':
                         encounteredFirstBroken = True
 
-        # look for other parts that must be '#', based on the total length of the list (compared to brokenNums)
-
 def possible_patterns(pattern: list, brokenNums):
-    numUnknown = pattern.count("?")
-    numBrokenKnown = pattern.count("#")
-    numBrokenUnknown = sum(brokenNums) - numBrokenKnown    
-    unknownLocations = [i for i, char in enumerate(pattern) if char == "?"]
-    # generate a list of . and # so that the total number of broken springs is correct
-    for i in range(2 ** numUnknown):
-        binaryString = f"{i:0>{numUnknown}b}"
-        if(binaryString.count("1") == numBrokenUnknown):
-            replacementString = binaryString.replace("1", "#").replace("0", ".")
-            for j, location in enumerate(unknownLocations):
-                pattern[location] = replacementString[j]
-            yield pattern
+    if len(brokenNums) == 0:
+        yield ['.'] * len(pattern)
+        return
+    numBroken = sum(brokenNums)
+    numWorkingSprings = len(pattern) - numBroken
+    combs = combinations(range(numWorkingSprings + 1), len(brokenNums))
+    for combination in combs:
+        possiblePattern = ['.'] * combination[0]
+        for i in range(len(brokenNums) - 1):
+            possiblePattern.extend(["#"] * brokenNums[i] + ["."] * (combination[i + 1] - combination[i]))
+        possiblePattern.extend(['#'] * brokenNums[-1] + ['.'] * (numWorkingSprings - combination[-1]))
+        yield possiblePattern
+
+
+
+def is_match(pattern, possibleMatch):
+    if len(pattern) != len(possibleMatch):
+        print("checking match against lists that are different length")
+        return False
+    for i, patternChar in enumerate(pattern):
+        if patternChar == "#" and possibleMatch[i] != '#':
+            return False
+        if patternChar == "." and possibleMatch[i] != ".":
+            return False
+    return True
+
 
 
 if __name__ == "__main__":
@@ -109,15 +131,20 @@ if __name__ == "__main__":
         springs, brokenNums = line.split(" ")
         brokenNums = [int(val) for val in brokenNums.split(",")]
         springs = [char for char in springs]
-        #print(f"before cleaning: {springs=}")
+        springs = unfold_springs(springs)
+        brokenNums = unfold_broken_nums(brokenNums)
+        print(f"before cleaning: {''.join(springs)=}, {brokenNums=}")
         clean_up(springs, brokenNums)
-        #print(f"after cleaning: {springs=}")
+        print(f"after cleaning: {''.join(springs)=}, {brokenNums=}")
         springsBackup = springs[:]
         for possiblePattern in possible_patterns(springs, brokenNums):
-            groupings = read_groups(possiblePattern)
-            # print(f"{possiblePattern} showed a grouping of {groupings}")
-            if groupings == brokenNums:
+            #print(f"{possiblePattern=}")
+            if is_match(springs, possiblePattern):
                 numPossible += 1
+            #groupings = read_groups(possiblePattern)
+            # print(f"{possiblePattern} showed a grouping of {groupings}")
+            #if groupings == brokenNums:
+            #    numPossible += 1
             
 
         print(f"{''.join(springsBackup)=}, {brokenNums=}, {numPossible=}")

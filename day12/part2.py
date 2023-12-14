@@ -15,6 +15,16 @@ sample_input = """???.### 1,1,3
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
 
+def unfold_springs(pattern: list):
+    output = pattern[:]
+    for _ in range(4):
+        output.append("?")
+        output.extend(pattern)
+    return output
+
+def unfold_broken_nums(brokenNums: list):
+    return brokenNums * 5
+
 def read_groups(pattern: list):
     inBroken = False  # True when index is going through broken springs
     numBroken = 0
@@ -81,6 +91,16 @@ def clean_up(pattern: list, brokenNums: list):
                         encounteredFirstBroken = True
 
         # look for other parts that must be '#', based on the total length of the list (compared to brokenNums)
+        roomForMovement = pattern.count('?') + pattern.count('#') - (sum(brokenNums) + len(brokenNums) - 1)
+        for i, span in enumerate(brokenNums):
+            if roomForMovement < span:
+                pass
+                spacesToLeft = sum(brokenNums[:i] + i)
+                for j in range(spacesToLeft, spacesToLeft + span + 1):
+                    if pattern[j] != '#':
+                        changed = True
+                        pattern[j] = '#'
+                pass
 
 def possible_patterns(pattern: list, brokenNums):
     numUnknown = pattern.count("?")
@@ -109,9 +129,11 @@ if __name__ == "__main__":
         springs, brokenNums = line.split(" ")
         brokenNums = [int(val) for val in brokenNums.split(",")]
         springs = [char for char in springs]
-        #print(f"before cleaning: {springs=}")
+        springs = unfold_springs(springs)
+        brokenNums = unfold_broken_nums(brokenNums)
+        print(f"before cleaning: {''.join(springs)=}")
         clean_up(springs, brokenNums)
-        #print(f"after cleaning: {springs=}")
+        print(f"after cleaning: {''.join(springs)=}")
         springsBackup = springs[:]
         for possiblePattern in possible_patterns(springs, brokenNums):
             groupings = read_groups(possiblePattern)
@@ -120,5 +142,5 @@ if __name__ == "__main__":
                 numPossible += 1
             
 
-        print(f"{''.join(springsBackup)=}, {brokenNums=}, {numPossible=}")
+        print(f"{springsBackup=}, {brokenNums=}, {numPossible=}")
     print(numPossible)
